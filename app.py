@@ -87,11 +87,38 @@ class MainWindow(QWidget):
         layout.addStretch()
         
         # Footer / Info
-        info_label = QLabel("© Muhammad Iqbal Ramadhan - NIM 231011400285 | v2.0.0")
-        info_label.setAlignment(Qt.AlignCenter)
-        info_label.setStyleSheet("color: #9ca0b0; font-size: 11px; font-weight: bold;")
-        layout.addWidget(info_label)
+        footer_layout = QVBoxLayout()
+        footer_layout.setSpacing(5)
+        
+        # Logos
+        logo_layout = QHBoxLayout()
+        logo_layout.setAlignment(Qt.AlignCenter)
+        
+        logo_unpam = QLabel()
+        pix_unpam = QtGui.QPixmap("logo_unpam.png").scaledToHeight(50, Qt.SmoothTransformation)
+        logo_unpam.setPixmap(pix_unpam)
+        
+        logo_ku = QLabel()
+        pix_ku = QtGui.QPixmap("logoku.png").scaledToHeight(50, Qt.SmoothTransformation)
+        logo_ku.setPixmap(pix_ku)
+        
+        logo_layout.addWidget(logo_unpam)
+        logo_layout.addSpacing(10)
+        logo_layout.addWidget(logo_ku)
+        footer_layout.addLayout(logo_layout)
 
+        # Text Info
+        info_label = QLabel("Tugas Matkul Kecerdasan Buatan Semester 5\nDosen Pengampu: Bapak NURJAYA S.Kom, M.Kom")
+        info_label.setAlignment(Qt.AlignCenter)
+        info_label.setStyleSheet("color: #4c4f69; font-size: 11px; font-weight: bold;")
+        footer_layout.addWidget(info_label)
+
+        copyright_label = QLabel("© Muhammad Iqbal Ramadhan - NIM 231011400285")
+        copyright_label.setAlignment(Qt.AlignCenter)
+        copyright_label.setStyleSheet("color: #9ca0b0; font-size: 10px;")
+        footer_layout.addWidget(copyright_label)
+
+        layout.addLayout(footer_layout)
         group.setLayout(layout)
         return group
 

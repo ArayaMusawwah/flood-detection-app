@@ -26,6 +26,6 @@ Packaging (opsional):
 
 Catatan:
 
-- Aplikasi ini adalah prototype untuk tugas kampus; MF dan rule disederhanakan.
+- Aplikasi ini adalah prototype untuk tugas kampus Universitas Pamulang untuk matkul Kecerdasan Buatan; MF dan rule disederhanakan.
 - Kamu bisa mengubah parameter MF di fuzzy_engine.py
 - Untuk menyimpan konfigurasi MF, tambahkan fungsionalitas save/load JSON (sudah mudah ditambahkan).
