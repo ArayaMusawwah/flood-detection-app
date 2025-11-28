@@ -12,19 +12,19 @@ class FuzzyFloodEngine:
         self.CR_params = {
             "rendah": [0, 0, 50, 100],
             "sedang": [50, 100, 150, 200],
-            "tinggi": [150, 200, 10000, 10000]
+            "tinggi": [150, 200, 300, 300]
         }
 
         self.WL_params = {
             "rendah": [0, 0, 1, 2],
             "sedang": [1.5, 2.5, 3.1, 5],
-            "tinggi": [2.5, 3.1, 100, 100]
+            "tinggi": [2.5, 3.1, 5, 5]
         }
 
         self.DU_params = {
             "rendah": [0, 0, 2, 6],
             "sedang": [5, 6, 10, 14],
-            "tinggi": [10, 14, 1000, 1000]
+            "tinggi": [10, 14, 24, 24]
         }
 
         # Output MFs Parameters
