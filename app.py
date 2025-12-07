@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, 
     QGroupBox, QFormLayout, QComboBox, QFileDialog, QMessageBox, QTableWidget, 
-    QTableWidgetItem, QProgressBar, QFrame, QSplitter, QTabWidget, QScrollArea
+    QTableWidgetItem, QProgressBar, QFrame, QSplitter, QTabWidget, QScrollArea, QSlider
 )
 from PyQt5.QtCore import Qt
 from fuzzy_engine import FuzzyFloodEngine
@@ -11,10 +11,12 @@ from ui.styles import STYLESHEET
 from ui.widgets import PlotCanvas
 import os
 
+VERSION = "1.1.0"
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Sistem Deteksi Banjir Fuzzy - Muhammad Iqbal Ramadhan (231011400285)")
+        self.setWindowTitle(f"Sistem Deteksi Banjir Fuzzy v{VERSION} - Muhammad Iqbal Ramadhan (231011400285)")
         self.setMinimumSize(1200, 800)
         self.setStyleSheet(STYLESHEET)
         self.engine = FuzzyFloodEngine()
@@ -51,23 +53,58 @@ class MainWindow(QWidget):
         self.preset.currentIndexChanged.connect(self.load_preset)
         layout.addWidget(self.preset)
 
-        # Inputs Form
-        form = QFormLayout()
-        form.setLabelAlignment(Qt.AlignLeft)
+        # Inputs Form with Sliders
+        form = QVBoxLayout()
         
+        # Curah Hujan (0-300 mm/jam)
+        layout.addWidget(QLabel("Curah Hujan (mm/jam):"))
+        cr_row = QHBoxLayout()
         self.cr_input = QLineEdit("10")
-        self.wl_input = QLineEdit("0.25")
-        self.du_input = QLineEdit("5")
+        self.cr_input.setFixedWidth(70)
+        self.cr_input.setToolTip("Curah Hujan dalam mm/jam (0-300)")
+        self.cr_slider = QSlider(Qt.Horizontal)
+        self.cr_slider.setRange(0, 300)
+        self.cr_slider.setValue(10)
+        self.cr_slider.setToolTip("Geser untuk mengatur curah hujan")
+        cr_row.addWidget(self.cr_slider)
+        cr_row.addWidget(self.cr_input)
+        layout.addLayout(cr_row)
         
-        # Tooltips
-        self.cr_input.setToolTip("Curah Hujan dalam mm/jam")
-        self.wl_input.setToolTip("Ketinggian Air dalam meter")
-        self.du_input.setToolTip("Durasi Hujan dalam jam")
-
-        form.addRow("Curah Hujan (mm/jam):", self.cr_input)
-        form.addRow("Ketinggian Air Sungai (m):", self.wl_input)
-        form.addRow("Durasi (jam):", self.du_input)
-        layout.addLayout(form)
+        # Ketinggian Air (0-5 m, step 0.01)
+        layout.addWidget(QLabel("Ketinggian Air Sungai (m):"))
+        wl_row = QHBoxLayout()
+        self.wl_input = QLineEdit("0.25")
+        self.wl_input.setFixedWidth(70)
+        self.wl_input.setToolTip("Ketinggian Air dalam meter (0-5)")
+        self.wl_slider = QSlider(Qt.Horizontal)
+        self.wl_slider.setRange(0, 500)  # 0.00 to 5.00 (x100)
+        self.wl_slider.setValue(25)  # 0.25
+        self.wl_slider.setToolTip("Geser untuk mengatur ketinggian air")
+        wl_row.addWidget(self.wl_slider)
+        wl_row.addWidget(self.wl_input)
+        layout.addLayout(wl_row)
+        
+        # Durasi (0-24 jam)
+        layout.addWidget(QLabel("Durasi (jam):"))
+        du_row = QHBoxLayout()
+        self.du_input = QLineEdit("5")
+        self.du_input.setFixedWidth(70)
+        self.du_input.setToolTip("Durasi Hujan dalam jam (0-24)")
+        self.du_slider = QSlider(Qt.Horizontal)
+        self.du_slider.setRange(0, 24)
+        self.du_slider.setValue(5)
+        self.du_slider.setToolTip("Geser untuk mengatur durasi")
+        du_row.addWidget(self.du_slider)
+        du_row.addWidget(self.du_input)
+        layout.addLayout(du_row)
+        
+        # Connect sliders and inputs for synchronization
+        self.cr_slider.valueChanged.connect(self._on_cr_slider_changed)
+        self.cr_input.textChanged.connect(self._on_cr_input_changed)
+        self.wl_slider.valueChanged.connect(self._on_wl_slider_changed)
+        self.wl_input.textChanged.connect(self._on_wl_input_changed)
+        self.du_slider.valueChanged.connect(self._on_du_slider_changed)
+        self.du_input.textChanged.connect(self._on_du_input_changed)
 
         # Buttons
         btn_layout = QVBoxLayout()
@@ -87,11 +124,38 @@ class MainWindow(QWidget):
         layout.addStretch()
         
         # Footer / Info
-        info_label = QLabel("© Muhammad Iqbal Ramadhan - NIM 231011400285 | v2.0.0")
-        info_label.setAlignment(Qt.AlignCenter)
-        info_label.setStyleSheet("color: #9ca0b0; font-size: 11px; font-weight: bold;")
-        layout.addWidget(info_label)
+        footer_layout = QVBoxLayout()
+        footer_layout.setSpacing(5)
+        
+        # Logos
+        logo_layout = QHBoxLayout()
+        logo_layout.setAlignment(Qt.AlignCenter)
+        
+        logo_unpam = QLabel()
+        pix_unpam = QtGui.QPixmap("logo_unpam.png").scaledToHeight(50, Qt.SmoothTransformation)
+        logo_unpam.setPixmap(pix_unpam)
+        
+        logo_ku = QLabel()
+        pix_ku = QtGui.QPixmap("logoku.png").scaledToHeight(50, Qt.SmoothTransformation)
+        logo_ku.setPixmap(pix_ku)
+        
+        logo_layout.addWidget(logo_unpam)
+        logo_layout.addSpacing(10)
+        logo_layout.addWidget(logo_ku)
+        footer_layout.addLayout(logo_layout)
 
+        # Text Info
+        info_label = QLabel("Tugas Matkul Kecerdasan Buatan Semester 5\nDosen Pengampu: Bapak NURJAYA S.Kom, M.Kom")
+        info_label.setAlignment(Qt.AlignCenter)
+        info_label.setStyleSheet("color: #4c4f69; font-size: 11px; font-weight: bold;")
+        footer_layout.addWidget(info_label)
+
+        copyright_label = QLabel("© Muhammad Iqbal Ramadhan - NIM 231011400285")
+        copyright_label.setAlignment(Qt.AlignCenter)
+        copyright_label.setStyleSheet("color: #9ca0b0; font-size: 10px;")
+        footer_layout.addWidget(copyright_label)
+
+        layout.addLayout(footer_layout)
         group.setLayout(layout)
         return group
 
@@ -189,14 +253,73 @@ class MainWindow(QWidget):
 
     def load_preset(self, idx):
         # 0: Custom, 1: Sample 1, etc.
+        # Block signals to prevent recursive updates
+        self.cr_slider.blockSignals(True)
+        self.wl_slider.blockSignals(True)
+        self.du_slider.blockSignals(True)
+        
         if idx == 1:
             self.cr_input.setText("10"); self.wl_input.setText("0.25"); self.du_input.setText("5")
+            self.cr_slider.setValue(10); self.wl_slider.setValue(25); self.du_slider.setValue(5)
         elif idx == 2:
             self.cr_input.setText("140"); self.wl_input.setText("2.20"); self.du_input.setText("8")
+            self.cr_slider.setValue(140); self.wl_slider.setValue(220); self.du_slider.setValue(8)
         elif idx == 3:
             self.cr_input.setText("260"); self.wl_input.setText("4.20"); self.du_input.setText("18")
+            self.cr_slider.setValue(260); self.wl_slider.setValue(420); self.du_slider.setValue(18)
         elif idx == 4:
             self.cr_input.setText("73"); self.wl_input.setText("1.55"); self.du_input.setText("2")
+            self.cr_slider.setValue(73); self.wl_slider.setValue(155); self.du_slider.setValue(2)
+        
+        self.cr_slider.blockSignals(False)
+        self.wl_slider.blockSignals(False)
+        self.du_slider.blockSignals(False)
+
+    # Slider-Input synchronization handlers
+    def _on_cr_slider_changed(self, value):
+        self.cr_input.blockSignals(True)
+        self.cr_input.setText(str(value))
+        self.cr_input.blockSignals(False)
+
+    def _on_cr_input_changed(self, text):
+        try:
+            val = int(float(text))
+            val = max(0, min(val, 300))
+            self.cr_slider.blockSignals(True)
+            self.cr_slider.setValue(val)
+            self.cr_slider.blockSignals(False)
+        except ValueError:
+            pass
+
+    def _on_wl_slider_changed(self, value):
+        self.wl_input.blockSignals(True)
+        self.wl_input.setText(f"{value / 100:.2f}")
+        self.wl_input.blockSignals(False)
+
+    def _on_wl_input_changed(self, text):
+        try:
+            val = int(float(text) * 100)
+            val = max(0, min(val, 500))
+            self.wl_slider.blockSignals(True)
+            self.wl_slider.setValue(val)
+            self.wl_slider.blockSignals(False)
+        except ValueError:
+            pass
+
+    def _on_du_slider_changed(self, value):
+        self.du_input.blockSignals(True)
+        self.du_input.setText(str(value))
+        self.du_input.blockSignals(False)
+
+    def _on_du_input_changed(self, text):
+        try:
+            val = int(float(text))
+            val = max(0, min(val, 24))
+            self.du_slider.blockSignals(True)
+            self.du_slider.setValue(val)
+            self.du_slider.blockSignals(False)
+        except ValueError:
+            pass
 
     def calculate(self):
         try:
@@ -283,7 +406,8 @@ class MainWindow(QWidget):
         if agg["flood_val"] is not None:
             ax1.axvline(x=agg["flood_val"], color='#40a02b', linestyle='-', linewidth=2, label='Hasil')
             
-        ax1.legend(loc='upper right', fontsize='small', facecolor='#e6e9ef', edgecolor='#bcc0cc')
+        ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), ncol=3, fontsize='small', facecolor='#e6e9ef', edgecolor='#bcc0cc')
+        self.plot1.figure.tight_layout()
         self.plot1.draw()
 
         # Plot Depth
@@ -297,7 +421,8 @@ class MainWindow(QWidget):
         if agg["depth_val"] is not None:
             ax2.axvline(x=agg["depth_val"], color='#40a02b', linestyle='-', linewidth=2, label='Hasil')
             
-        ax2.legend(loc='upper right', fontsize='small', facecolor='#e6e9ef', edgecolor='#bcc0cc')
+        ax2.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), ncol=3, fontsize='small', facecolor='#e6e9ef', edgecolor='#bcc0cc')
+        self.plot2.figure.tight_layout()
         self.plot2.draw()
 
     def _update_rules(self, active):
