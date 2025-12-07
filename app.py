@@ -11,7 +11,15 @@ from ui.styles import STYLESHEET
 from ui.widgets import PlotCanvas
 import os
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller bundle."""
+    if hasattr(sys, '_MEIPASS'):
+        # Running as bundled executable
+        return os.path.join(sys._MEIPASS, relative_path)
+    # Running in development
+    return os.path.join(os.path.abspath("."), relative_path)
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -132,11 +140,11 @@ class MainWindow(QWidget):
         logo_layout.setAlignment(Qt.AlignCenter)
         
         logo_unpam = QLabel()
-        pix_unpam = QtGui.QPixmap("logo_unpam.png").scaledToHeight(50, Qt.SmoothTransformation)
+        pix_unpam = QtGui.QPixmap(resource_path("logo_unpam.png")).scaledToHeight(50, Qt.SmoothTransformation)
         logo_unpam.setPixmap(pix_unpam)
         
         logo_ku = QLabel()
-        pix_ku = QtGui.QPixmap("logoku.png").scaledToHeight(50, Qt.SmoothTransformation)
+        pix_ku = QtGui.QPixmap(resource_path("logoku.png")).scaledToHeight(50, Qt.SmoothTransformation)
         logo_ku.setPixmap(pix_ku)
         
         logo_layout.addWidget(logo_unpam)
