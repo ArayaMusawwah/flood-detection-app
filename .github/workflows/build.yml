@@ -2,6 +2,9 @@ name: Build Windows Executable
 
 on:
   push:
+    branches:
+      - main
+      - branch-build
     tags:
       - "v*"
   workflow_dispatch:
