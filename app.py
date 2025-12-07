@@ -11,10 +11,12 @@ from ui.styles import STYLESHEET
 from ui.widgets import PlotCanvas
 import os
 
+VERSION = "1.1.0"
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Sistem Deteksi Banjir Fuzzy - Muhammad Iqbal Ramadhan (231011400285)")
+        self.setWindowTitle(f"Sistem Deteksi Banjir Fuzzy v{VERSION} - Muhammad Iqbal Ramadhan (231011400285)")
         self.setMinimumSize(1200, 800)
         self.setStyleSheet(STYLESHEET)
         self.engine = FuzzyFloodEngine()
